@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
+import java.nio.file.Watchable;
 import java.util.Date;
 
 /**
@@ -18,9 +19,8 @@ class AlarmHelper {
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         long trggerTime = nextAlarm.getTime();
         Intent i = new Intent(context, AlarmReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
         assert manager != null;
-        manager.cancel(pi);
-        manager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, trggerTime, pi);
+        manager.setExact(AlarmManager.RTC_WAKEUP, trggerTime, pi);
     }
 }

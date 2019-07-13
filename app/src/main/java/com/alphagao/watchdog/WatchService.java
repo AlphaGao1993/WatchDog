@@ -50,7 +50,6 @@ public class WatchService extends IntentService {
         super.onCreate();
         Log.d("watch", "监听已开启");
         setServiceForeground();
-        AlarmHelper.initAlarm(this, AlarmUtil.getNextAlarmDate(this));
     }
 
     private void setServiceForeground() {
@@ -84,29 +83,23 @@ public class WatchService extends IntentService {
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         Log.d("watch", "监听被 start 了");
-        if (intent != null) {
-            String pkgName = intent.getStringExtra("pkgName");
-            if (!TextUtils.isEmpty(pkgName)) {
-                Intent outIntent = getPackageManager().getLaunchIntentForPackage(pkgName);
-                startWatch(pkgName, outIntent);
-            }
-        }
-        nextWatch();
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         Log.d("watch", "收到监听请求");
-
         if (intent != null) {
             String pkgName = intent.getStringExtra("pkgName");
             if (!TextUtils.isEmpty(pkgName)) {
                 Intent outIntent = getPackageManager().getLaunchIntentForPackage(pkgName);
                 startWatch(pkgName, outIntent);
+            } else {
+                nextWatch();
             }
+        } else {
+            nextWatch();
         }
-        nextWatch();
     }
 
     private void startWatch(final String pkgName, final Intent outIntent) {
@@ -177,7 +170,7 @@ public class WatchService extends IntentService {
         stream.flush();
         stream.close();
         process.waitFor();
-
+        nextWatch();
     }
 
     private void nextWatch() {
@@ -204,7 +197,7 @@ public class WatchService extends IntentService {
     private void openTargetAndDump() throws IOException, InterruptedException {
         Process su = Runtime.getRuntime().exec("su");
         DataOutputStream stream = new DataOutputStream(su.getOutputStream());
-        stream.writeBytes("sleep 4\n");
+        stream.writeBytes("sleep 10\n");
         stream.flush();
         stream.writeBytes("input swipe 600 900 600 300 300\n");
         stream.flush();

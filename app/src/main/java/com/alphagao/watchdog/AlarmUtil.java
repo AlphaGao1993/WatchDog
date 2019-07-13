@@ -11,7 +11,7 @@ import java.util.Date;
  */
 
 class AlarmUtil {
-    public static void saveTimeValue(Context context, int inWorkValue, int outWorkValue) {
+    static void saveTimeValue(Context context, int inWorkValue, int outWorkValue) {
         SharedPreferences preferences = context.getSharedPreferences("config", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("inTime", inWorkValue);
@@ -19,7 +19,7 @@ class AlarmUtil {
         editor.apply();
     }
 
-    public static int[] getTimeValue(Context context) {
+    static int[] getTimeValue(Context context) {
         int[] value = new int[2];
         SharedPreferences preferences = context.getSharedPreferences("config", Context.MODE_PRIVATE);
         value[0] = preferences.getInt("inTime", 0);
@@ -31,22 +31,25 @@ class AlarmUtil {
         SharedPreferences preferences = context.getSharedPreferences("config", Context.MODE_PRIVATE);
         int in = preferences.getInt("inTime", 0);
         int out = preferences.getInt("outTime", 0);
-        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        int minute = Calendar.getInstance().get(Calendar.MINUTE);
-        int now = hour * 100 + minute;
-        Date date = new Date();
-        long nextTime = date.getTime();
-        if (now < in) {
-            nextTime += (in / 100 - hour) * 3600 * 1000 + (in % 100 - minute) * 60 * 1000;
-        } else if (now < out) {
-            nextTime += (out / 100 - hour) * 3600 * 1000 + (out % 100 - minute) * 60 * 1000;
-        } else if (now > out) {
-            nextTime += (in / 100 - hour + (23 - hour)) * 3600 * 1000 + (in % 100 - minute) * 60 * 1000;
-        } else {
-            nextTime += 1000 * 3600 * 24;
+        Calendar instance = Calendar.getInstance();
+        int day = instance.get(Calendar.DAY_OF_YEAR);
+        int hour = instance.get(Calendar.HOUR_OF_DAY);
+        int minute = instance.get(Calendar.MINUTE);
+        int now = hour * 100 + minute + 1;
+        instance.set(Calendar.SECOND, 0);
+        if (now < in) {//上班之前
+            instance.set(Calendar.HOUR_OF_DAY, in / 100);
+            instance.set(Calendar.MINUTE, in % 100);
+        } else if (now < out) {//下班之前
+            instance.set(Calendar.HOUR_OF_DAY, out / 100);
+            instance.set(Calendar.MINUTE, out % 100);
+        } else if (now > out) {//下班之后
+            instance.set(Calendar.DAY_OF_YEAR, day + 1);
+            instance.set(Calendar.HOUR_OF_DAY, in / 100);
+            instance.set(Calendar.MINUTE, in % 100);
+        } else { //与上下班时间重合，2 分钟后立即打卡
+            instance.set(Calendar.MINUTE, minute + 2);
         }
-
-        date.setTime(nextTime);
-        return date;
+        return instance.getTime();
     }
 }

@@ -31,12 +31,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Intent intent = new Intent(this, WatchService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent);
-        } else {
-            startService(intent);
-        }
         inWorkView = findViewById(R.id.in_work_time);
         outWorkView = findViewById(R.id.out_work_time);
         TimePicker timePicker = findViewById(R.id.time_picker);
